@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Health Insurance Claim Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M12 3l7 3v5c0 4.6-3 8.2-7 10-4-1.8-7-5.4-7-10V6l7-3z"/><path d="M12 9v6M9 12h6"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">Claim Tracker</div>
+        <div class="brand-sub">Health insurance</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-btn active" id="nav-dashboard" onclick="showPage('dashboard')">
+        <svg viewBox="0 0 24 24" class="ico"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg>
+        <span>Overview</span>
+      </button>
+      <button class="nav-btn" id="nav-policies" onclick="showPage('policies')">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M12 3l7 3v5c0 4.6-3 8.2-7 10-4-1.8-7-5.4-7-10V6l7-3z"/></svg>
+        <span>Policies</span>
+      </button>
+      <button class="nav-btn" id="nav-claims" onclick="showPage('claims')">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M7 3h8l4 4v14H7z"/><path d="M15 3v4h4M10 12h6M10 16h6"/></svg>
+        <span>Claims</span>
+        <span class="nav-badge hidden" id="claimsBadge" title="Reminders due today or overdue"></span>
+      </button>
+    </nav>
+
+    <div class="sidebar-foot">
+      <div class="foot-actions">
+        <button class="link-btn" onclick="loadSampleData()">Load sample data</button>
+        <button class="link-btn" onclick="clearAllData()">Clear all data</button>
+      </div>
+      <div class="team">
+        <div>Group project</div>
+        <div>Jigyashu Kumar &ndash; 12618661</div>
+        <div>Anish Kumar &ndash; 12616949</div>
+        <div>Suhitha Pravallika &ndash; 12617848</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <div class="content">
+    <main>
+
+      <!-- ---------- Overview ---------- -->
+      <section id="page-dashboard" class="page">
+        <div class="page-head">
+          <div>
+            <h1>Overview</h1>
+            <p class="sub" id="todayText"></p>
+          </div>
+          <button class="btn" onclick="openClaimDialog()">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg> New claim
+          </button>
+        </div>
+
+        <div id="emptyBanner" class="panel banner hidden">
+          <div>
+            <h3>Start with a policy</h3>
+            <p>Every claim is filed under a policy. Add yours, or load sample data to look around first.</p>
+          </div>
+          <div class="banner-actions">
+            <button class="btn" onclick="openPolicyDialog()">Add policy</button>
+            <button class="btn btn-ghost" onclick="loadSampleData()">Load sample data</button>
+          </div>
+        </div>
+
+        <div id="reminderAlert" class="alert hidden"></div>
+
+        <div class="panel strip" id="summaryStrip"></div>
+
+        <div class="section-head">
+          <h2>Claims pipeline</h2>
+          <p class="sub">Where every claim stands right now. Select one to open it.</p>
+        </div>
+        <div class="pipeline" id="pipeline"></div>
+
+        <div class="two-col">
+          <div class="panel">
+            <h3>Reminders</h3>
+            <div id="reminderList"></div>
+          </div>
+          <div class="panel">
+            <h3>Policy coverage used</h3>
+            <div id="coverageList"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- Policies ---------- -->
+      <section id="page-policies" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1>Policies</h1>
+            <p class="sub">The plans your claims are filed under.</p>
+          </div>
+          <button class="btn" onclick="openPolicyDialog()">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg> Add policy
+          </button>
+        </div>
+        <div id="policyList" class="policy-grid"></div>
+      </section>
+
+      <!-- ---------- Claims ---------- -->
+      <section id="page-claims" class="page hidden">
+        <div class="page-head">
+          <div>
+            <h1>Claims</h1>
+            <p class="sub">Search, filter and open any claim.</p>
+          </div>
+          <button class="btn" onclick="openClaimDialog()">
+            <svg viewBox="0 0 24 24" class="ico"><path d="M12 5v14M5 12h14"/></svg> New claim
+          </button>
+        </div>
+
+        <div class="toolbar">
+          <div class="search">
+            <svg viewBox="0 0 24 24" class="ico"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+            <input type="text" id="searchBox" placeholder="Search by patient, hospital, diagnosis or claim ID" oninput="renderClaims()" aria-label="Search claims">
+          </div>
+          <select id="filterStatus" onchange="renderClaims()" aria-label="Filter by status"></select>
+          <select id="filterPolicy" onchange="renderClaims()" aria-label="Filter by policy"></select>
+          <select id="sortBy" onchange="renderClaims()" aria-label="Sort claims">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="amountHigh">Amount: high to low</option>
+            <option value="amountLow">Amount: low to high</option>
+          </select>
+        </div>
+        <div class="toolbar toolbar-dates">
+          <label>Treatment date from
+            <input type="date" id="dateFrom" onchange="renderClaims()">
+          </label>
+          <label>Treatment date to
+            <input type="date" id="dateTo" onchange="renderClaims()">
+          </label>
+          <button class="btn btn-ghost" type="button" onclick="clearFilters()">Clear filters</button>
+        </div>
+        <div id="claimList"></div>
+      </section>
+
+      <!-- ---------- Claim detail ---------- -->
+      <section id="page-detail" class="page hidden">
+        <button class="back-btn" onclick="showPage('claims')">
+          <svg viewBox="0 0 24 24" class="ico"><path d="M15 6l-6 6 6 6"/></svg> All claims
+        </button>
+        <div id="detailContent"></div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ POLICY DIALOG ============ -->
+<dialog id="policyDialog">
+  <form id="policyForm" method="dialog">
+    <div class="dlg-head">
+      <h2 id="policyFormTitle">Add policy</h2>
+      <button type="button" class="icon-btn" onclick="el('policyDialog').close()" aria-label="Close">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="dlg-body">
+      <input type="hidden" id="policyId">
+      <div class="form-grid">
+        <label>Insurance company
+          <input type="text" id="pInsurer" required placeholder="e.g. Star Health">
+        </label>
+        <label>Policy number
+          <input type="text" id="pNumber" required placeholder="e.g. SH-123456">
+        </label>
+        <label>Policyholder name
+          <input type="text" id="pHolder" required>
+        </label>
+        <label>Plan type
+          <select id="pType">
+            <option>Individual</option>
+            <option>Family Floater</option>
+            <option>Senior Citizen</option>
+            <option>Group / Employer</option>
+          </select>
+        </label>
+        <label>Sum insured (₹)
+          <input type="number" id="pSum" min="1" required>
+        </label>
+        <span></span>
+        <label>Start date
+          <input type="date" id="pStart" required>
+        </label>
+        <label>End date
+          <input type="date" id="pEnd" required>
+        </label>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn btn-ghost" onclick="el('policyDialog').close()">Cancel</button>
+      <button type="submit" class="btn" id="policySubmitBtn">Save policy</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ============ CLAIM DIALOG ============ -->
+<dialog id="claimDialog">
+  <form id="claimForm" method="dialog">
+    <div class="dlg-head">
+      <h2 id="claimDialogTitle">New claim</h2>
+      <button type="button" class="icon-btn" onclick="el('claimDialog').close()" aria-label="Close">
+        <svg viewBox="0 0 24 24" class="ico"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="dlg-body">
+      <input type="hidden" id="claimEditId">
+      <div id="noPolicyNotice" class="notice hidden">
+        <div><strong>No policy yet.</strong> A claim has to be filed under a policy.</div>
+        <div class="notice-actions">
+          <button type="button" class="btn btn-sm" onclick="el('claimDialog').close(); openPolicyDialog();">Add policy</button>
+          <button type="button" class="btn btn-sm btn-ghost" onclick="el('claimDialog').close(); loadSampleData();">Load sample data</button>
+        </div>
+      </div>
+      <div class="form-grid">
+        <label class="span-2">Policy
+          <select id="cPolicy" required></select>
+        </label>
+        <label>Patient name
+          <input type="text" id="cPatient" required>
+        </label>
+        <label>Hospital or clinic
+          <input type="text" id="cHospital" required>
+        </label>
+        <label>Diagnosis or reason
+          <input type="text" id="cDiagnosis" required>
+        </label>
+        <label>Claim type
+          <select id="cType">
+            <option>Reimbursement</option>
+            <option>Cashless</option>
+          </select>
+        </label>
+        <label>Claim amount (₹)
+          <input type="number" id="cAmount" min="1" required>
+        </label>
+        <label>Admission or treatment date
+          <input type="date" id="cDate" required>
+        </label>
+        <label class="span-2">Notes (optional)
+          <textarea id="cNotes" rows="2"></textarea>
+        </label>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn btn-ghost" onclick="el('claimDialog').close()">Cancel</button>
+      <button type="submit" class="btn" id="claimSubmitBtn">Create claim</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
